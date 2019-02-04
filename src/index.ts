@@ -55,12 +55,6 @@ export type MustBeNumber<T> = T extends number ? string : 'Last property should 
  * This allows recursion, limited to 5 or 6 steps.
  */
 
-type NoArrayA<T,a>         = NoArray<ValueOf<NoArray <T>,a>>
-type NoArrayB<T,a,b>       = NoArray<ValueOf<NoArrayA<T,a>,b>>;
-type NoArrayC<T,a,b,c>     = NoArray<ValueOf<NoArrayB<T,a,b>,c>>;
-type NoArrayD<T,a,b,c,d>   = NoArray<ValueOf<NoArrayC<T,a,b,c>,d>>;
-type NoArrayE<T,a,b,c,d,e> = NoArray<ValueOf<NoArrayD<T,a,b,c,d>,e>>;
-
 // Arguments.
 // `dig` and `digUp` use max 6 arguments for nested keys.
 // That should be plenty. The default max arguments for eslint is 3. See https://eslint.org/docs/rules/max-params
