@@ -1,4 +1,4 @@
-# digup nested object selector
+# digUp nested object selector
 
 `digup-ts` handles nested objects and arrays,
 without throwing error `Cannot read property 'x' of undefined`.
@@ -8,6 +8,10 @@ without throwing error `Cannot read property 'x' of undefined`.
 - Supported by all browsers 
 - Light weight
 - Supports arrays
+
+If you need more features like setting, removing and transforming nested properties,
+try [`dig-ts`](https://www.npmjs.com/package/dig-ts). 
+
 
 #### Install
 
@@ -19,10 +23,10 @@ npm i --save digup-ts
 
 - TypeScript >= 2.9
 
-## Example `dig` Usage
+## Example `digUp` Usage
 
 ```typescript
-import { digup } from 'digup-ts';
+import { digUp } from 'digup-ts';
 
 // Let's pretend abc is unpredictable and maybe incomplete.
 const response = {a:
@@ -32,9 +36,9 @@ const response = {a:
                         ]
                     }
                   };
-let first = digup(response, 'a', 'b', 0, 'c'); // 'First'
-let maybe = digup(response, 'a', 'b', 9, 'c'); // undefined
-let str   = digup(response, ['a', 'b', 9, 'c'], 'unknown'); // 'unknown'
+let first = digUp(response, 'a', 'b', 0, 'c'); // 'First'
+let maybe = digUp(response, 'a', 'b', 9, 'c'); // undefined
+let str   = digUp(response, ['a', 'b', 9, 'c'], 'unknown'); // 'unknown'
 ```
 As you can see, it accepts a default value, like 'unknown'. 
 Just wrap the keys in an array.
@@ -43,50 +47,89 @@ Just wrap the keys in an array.
 
 Typescript is fully supported, so your editor points out missing properties.
 ```
-let X = digup(response, 'X'); // typescript error 'X' doesn't exist...
+let X = digUp(response, 'X'); // typescript error 'X' doesn't exist...
 ```
 
 ## Array find
 
 The examples below all use the following data:
 ```typescript
-const store = {
-    customers: [
-        {name: 'A', age:20}, // missing purchases
-        {name: 'B', // missing age
-            purchases: [
-                {name: 'shoes', price:10}
-            ]
-        },
-        {name: 'C', age:60,
-            purchases: [
-                {name: 'flipflops'}, // missing price
-                {name: 'boots', price:20}
-            ]
-        },
-        {}, // missing name + purchases
-        {purchases: [{name: 'boots', price:20}]} // missing name
-    ]
+const response = {
+    data: {
+        customers: [
+            {name: 'A', age:10}, // missing purchases
+            {name: 'B', // missing age
+                purchases: [
+                    {name: 'shoes', price:10}
+                ]
+            },
+            {name: 'C', age:60,
+                purchases: [
+                    {name: 'flipflops'}, // missing price
+                    {name: 'boots', price:20}
+                ]
+            },
+            {}, // missing name + purchases
+            {purchases: [{name: 'boots', price:20}]} // missing name
+        ]
+    }
 }
 ```
 ## Array.find among keys
 
 Use a function to find a single item in an array.
 ```typescript
-import { dig, last } from 'dig-ts';
+import { digUp, last } from 'digup-ts';
 
 // Get customer C using a function
-const customerC = digup(store, 'customers', cust=>cust.name=='C');
+const customerC = digUp(response, 'data', 'customers', cust=>cust.name=='C');
 
 // Get price of boots of customer C (or 0 if not found)
-const price = digup(store, 'customers', cust=>cust.name=='C', 'purchases', pur=>pur.name=='boots', 'price');
+const price = digUp(response, 'data', 'customers', cust=>cust.name=='C', 'purchases', pur=>pur.name=='boots', 'price');
 
-// 'last' function is included in dig-ts
-const lastSale = digup(store, 'customers', last, 'purchases', last); // boots object
+// 'last' function is included in digup-ts
+const lastSale = digUp(response, 'data', 'customers', last, 'purchases', last); // boots object
 
 ```
 
 ## Alternatives
+
+If you need more features like setting, removing and transforming nested properties, try [`dig-ts`](https://www.npmjs.com/package/dig-ts).
+```typescript
+import { dig, last } from 'dig-ts';
+
+const summary = dig(response, 'data', 'customers')
+    .return(customers => ({
+        customerCount: customers.length,
+        purchaseCount: customers.collect('purchases').length,
+        biggestPurchase: customers.collect('purchases').max('price'),
+        biggestPurchaseByLastOldCustomer: customers.filter(customer=>customer.age>=60)
+            .dig(last, 'products').max('price')
+        ,
+        whoBoughtMost: customers.filter(cust => dig(cust).max('purchases', 'length') 
+                                             == customers.max('purchases', 'length'))
+                         .dig(last)
+                         .return(cust=>({
+                            customerName: cust.name,
+                            ...dig(cust, 'purchases').return(purchases => ({
+                                itemCount: purchases.length;
+                                totalPrice: purchases.sum('price')
+                            }))
+                         })
+        })
+    );
+// summary will be {
+//    customerCount: 5,
+//    purchaseCount: 4,
+//    biggestPurchase: 20,
+//    biggestPurchaseByLastOldCustomer: 20,
+//    whoBoughtMost: {
+//        customerName: 'C',
+//        itemCount: 2,
+//        totalPrice: 20
+//        }
+//    }
+```
 Logical expressions are very verbose for long paths.
 ```
 let c2 = (abc.a && abc.a.b && abc.a.b[9] && abc.a.b[9].c) || 'C-9'
@@ -124,54 +167,16 @@ More alternatives:
 
 ### Type Preservation
 
-`dig-ts` preserves TypeScript typings and code-completion by IDEs like Visual Studio Code or WebStorm.
+`digup-ts` preserves TypeScript typings and code-completion by IDEs like Visual Studio Code or WebStorm.
 
 ```typescript
 const abc = {a: {b: {c: 'C'}}};
 
-let b = digup(_=> abc.a.b, {c:'C default'});
+let b = digUp(_=> abc.a.b, {c:'C default'});
 
 console.log(b.c) // When typing 'b' your code editor suggests '.c'
 ```
 
-
-### Optional properties
-
-To traverse optional properties, wrap your object in the `all` function, included in `ts-digup`. 
-```typescript
-import { digup } from 'dig-ts';
-
-// Everything is optional.
-type ABCDE = {a?: {b?: {c?: {d?: {e?: string}}}}}
-const abc:ABCDE = {
-    a:{
-        b: {
-            c: {} // incomplete.
-        }
-    }
-};
-
-let e1 = digup(abc, 'a', 'b', 'c', 'd');
-```
-
-Note: the `all` function tells typescript all (nested) properties exits. 
-This affects the return value. For instance, using `abc` from before: 
-```typescript
-// 'all' tells typescript not to worry whether anything exists.
-let c = digup(_=> all(abc).a.b.c);
-
-if (c) {
-    // When c exists, typescript falsely assumes d and e exist.
-    console.log(c.d.e); // RUNTIME error: Cannot read property
-    
-    // This works. Typscript normally enforces this. Now it's up to you. 
-    if (c.d) {
-        console.log(c.d.e);
-    }
-}
-```
-Please keep this in mind when using optional properties.
-
 ## License
 
-`dig-ts` is MIT Licensed.
+`digup-ts` is MIT Licensed.
