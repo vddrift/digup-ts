@@ -1,4 +1,4 @@
-# digUp nested object selector
+# dig nested object selector
 
 `digup-ts` handles nested objects and arrays,
 without throwing error `Cannot read property 'x' of undefined`.
