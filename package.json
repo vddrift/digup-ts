@@ -1,6 +1,6 @@
 {
   "name": "digup-ts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Type safe deep object/array reader",
   "repository": {
     "type": "git",
