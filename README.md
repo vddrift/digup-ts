@@ -1,7 +1,8 @@
-# dig nested object selector
+# digUp nested object selector
 
 `digup-ts` handles nested objects and arrays,
-without throwing error `Cannot read property 'x' of undefined`.
+without throwing error `Cannot read property 'x' of undefined`,
+while fully supporting typescript.
 
 #### Features
 - Typescript support, for proper code-completion while coding.
