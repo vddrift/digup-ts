@@ -165,18 +165,6 @@ More alternatives:
 - https://github.com/facebookincubator/idx
 - https://github.com/yayoc/optional-chain
 
-### Type Preservation
-
-`digup-ts` preserves TypeScript typings and code-completion by IDEs like Visual Studio Code or WebStorm.
-
-```typescript
-const abc = {a: {b: {c: 'C'}}};
-
-let b = digUp(_=> abc.a.b, {c:'C default'});
-
-console.log(b.c) // When typing 'b' your code editor suggests '.c'
-```
-
 ## License
 
 `digup-ts` is MIT Licensed.
