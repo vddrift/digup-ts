@@ -97,39 +97,41 @@ const lastSale = digUp(response, 'data', 'customers', last, 'purchases', last); 
 
 If you need more features like setting, removing and transforming nested properties, try [`dig-ts`](https://www.npmjs.com/package/dig-ts).
 ```typescript
-import { dig, last } from 'dig-ts';
+import { dig, last, max } from 'dig-ts';
 
 const summary = dig(response, 'data', 'customers')
     .return(customers => ({
-        customerCount: customers.length,
         purchaseCount: customers.collect('purchases').length,
-        biggestPurchase: customers.collect('purchases').max('price'),
+        biggestPurchase: customers.max('purchases', 'price'),
         biggestPurchaseByLastOldCustomer: customers.filter(customer=>customer.age>=60)
             .dig(last, 'products').max('price')
         ,
-        whoBoughtMost: customers.filter(cust => dig(cust).max('purchases', 'length') 
-                                             == customers.max('purchases', 'length'))
-                         .dig(last)
-                         .return(cust=>({
-                            customerName: cust.name,
+        topCustomer: customers
+                        .find(max('purchases', 'length'))
+                        .return(cust=>({
+                            name: cust.name,
                             ...dig(cust, 'purchases').return(purchases => ({
-                                itemCount: purchases.length;
+                                itemCount: purchases.length,
+                                topPurchase: purchases.max('price'),
                                 totalPrice: purchases.sum('price')
                             }))
-                         })
+                         }))
         })
     );
-// summary will be {
-//    customerCount: 5,
-//    purchaseCount: 4,
-//    biggestPurchase: 20,
-//    biggestPurchaseByLastOldCustomer: 20,
-//    whoBoughtMost: {
-//        customerName: 'C',
-//        itemCount: 2,
-//        totalPrice: 20
-//        }
-//    }
+```
+summary will be:
+```
+{
+    purchaseCount: 4,
+    biggestPurchase: 20,
+    biggestPurchaseByLastOldCustomer: 20,
+    topCustomer: {
+        name: 'C',
+        itemCount: 2,
+        topPurchase: 20
+        totalPrice: 20
+    }
+}
 ```
 Logical expressions are very verbose for long paths.
 ```
