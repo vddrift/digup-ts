@@ -151,7 +151,7 @@ export interface DigupFunction {
 
     )
         // : BB extends IndexOf<A<T,a>> |Find<A<T,a>>                ? ResultB<T,a,BB>
-        : Arr extends IndexOf<T> |Find<T>                        ? {c:{d:1}}
+        : Arr extends IndexOf<T> |Find<T>                        ? ResultB<T,a,Arr>
         : Arr extends {0:any, 1:any, 2:any, 3:any, 4:any, 5:any} ? ResultF<T,a,b,c,d,e,f>
         : Arr extends {0:any, 1:any, 2:any, 3:any, 4:any}        ? ResultE<T,a,b,c,d,e>
         : Arr extends {0:any, 1:any, 2:any, 3:any}               ? ResultD<T,a,b,c,d>
